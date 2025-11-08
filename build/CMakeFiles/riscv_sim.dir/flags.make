@@ -4,7 +4,7 @@
 # compile CXX with /ucrt64/bin/c++.exe
 CXX_DEFINES = 
 
-CXX_INCLUDES = 
+CXX_INCLUDES = -I/c/Users/felip/Downloads/riscv-prj/include
 
 CXX_FLAGS = -std=gnu++20
 
