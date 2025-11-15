@@ -41,32 +41,65 @@ void CPU::step(){
     uint32_t rd     = getBits(inst, 11, 7);
     uint32_t funct3 = getBits(inst, 14, 12);
     uint32_t rs1    = getBits(inst, 19, 15);
-    uint32_t imm12  = getBits(inst, 31, 20);
-    int32_t imm = signExtend(imm12, 12);
+    uint32_t rs2    = getBits(inst, 24, 20);
+    uint32_t funct7 = getBits(inst, 31, 25);
 
 
     std::cout << "[CPU] opcode= " << opcode 
               << ", rd=" << rd 
               << ", funct3=" << funct3 
               << ", rs1=" << rs1 
-              << ", imm=" << imm << std::endl;
+              << ", rs2=" << rs2
+              << ", funct7=" << funct7 << std::endl;
     
-    if (opcode == 0x13 && funct3 == 0x0) {
-        uint32_t old = x[rs1];
-        uint32_t result = old + imm;
+    if (opcode == 0x13){
+        uint32_t imm12 = getBits(inst, 31, 20);
+        int32_t imm = signExtend(imm12, 12);
 
-        if (rd != 0) {
-            x[rd] = result;
+        std::cout << "[CPU] (I-type) imm=" << imm << std::endl;
+
+        if (funct3 == 0x0){
+            uint32_t old = x[rs1];
+            uint32_t result = old + imm;
+
+            if(rd != 0){
+              x[rd] = result;
+            }
+           std::cout << "[CPU] Executando ADDI: x" << rd
+                     << " = x" << rs1 << "(" << old << ") + "
+                     << imm << " -> " << result << std::endl;
+        }else{
+            std::cout << "[CPU] I-type nao implementado.\n";
         }
-
-        std::cout << "[CPU] Executando ADDI: x" << rd 
-                  << " = x" << rs1 << "(" << old << ") + "
-                  << imm << " -> " << result << std::endl;
+    } else if (opcode == 0x33){
+        if (funct3 == 0x0 && funct7 == 0x00){
+            uint32_t a = x[rs1];
+            uint32_t b = x[rs2];
+            uint32_t result = a + b;
+            if(rd != 0){
+              x[rd] = result;
+            }
+            std::cout << "[CPU] Executando ADD: x" << rd
+                      << " = x" << rs1 << "(" << a << ") + "
+                      << "x" << rs2 << "(" << b << ") -> " 
+                      << result << std::endl;
+        } else if(funct3 == 0x0 && funct7 == 0x20){
+            uint32_t a = x[rs1];
+            uint32_t b = x[rs2];
+            uint32_t result = a - b;
+            if(rd != 0){
+              x[rd] = result;
+            }
+            std::cout << "[CPU] Executando SUB: x" << rd
+                      << " = x" << rs1 << "(" << a << ") - "
+                      << "x" << rs2 << "(" << b << ") -> " 
+                      << result << std::endl;
+        }else {
+            std::cout << "[CPU] R-type nao implementado.\n";
+        }
     } else {
-        std::cout << "[CPU] Instrucao desconhecida. NOP.\n";
+        std::cout << "[CPU] Opcode nao implementado.\n";
     }
-        
     pc += 4;
-
     x[0] = 0;
 }
