@@ -97,8 +97,48 @@ void CPU::step(){
         }else {
             std::cout << "[CPU] R-type nao implementado.\n";
         }
-    } else {
-        std::cout << "[CPU] Opcode nao implementado.\n";
+    } else if (opcode == 0x03){
+        uint32_t imm12 = getBits(inst, 31, 20);
+        int32_t imm = signExtend(imm12, 12);
+        uint32_t addr = x[rs1] + imm;
+
+        if (funct3 == 0x2){
+            if(addr % 4 != 0){
+                std::cout << "[CPU] EXC: LW desalinhado em " << addr << " (ignorado)\n";
+            }else {
+                uint32_t value = bus.read32(addr);
+                if(rd != 0){
+                  x[rd] = value;
+                }
+                std::cout << "[CPU] Executando LW: x" << rd
+                          << " = MEM[" << addr << "] -> " 
+                          << value << std::endl;
+            }
+        } else {
+            std::cout << "[CPU] Load nao implementado.\n";
+        }
+
+    }else if(opcode == 0x23){
+        uint32_t imm_high = getBits(inst, 31, 25);
+        uint32_t imm_low = getBits(inst, 11, 7);
+        uint32_t imm12u = (imm_high << 5) | imm_low;
+        int32_t imm = signExtend(imm12u, 12);
+        uint32_t addr = x[rs1] + imm;
+
+        if(funct3 == 0x2){
+            if(addr % 4 != 0){
+                std::cout <<  "[CPU] EXC: SW desalinhado em " << addr << " (ignorado)\n";
+            } else {
+                uint32_t value = x[rs2];
+                bus.write32(addr, value);
+                std::cout << "[CPU] Executando SW: MEM[" << addr << "] = x" 
+                          << rs2 << "(" << value << ")\n";
+            }
+        } else{
+            std::cout << "[CPU] Store nao implementado.\n";
+        }
+    }else{
+        std::cout << "[CPU] Instrucao desconhecida. NOP.\n";
     }
     pc += 4;
     x[0] = 0;
