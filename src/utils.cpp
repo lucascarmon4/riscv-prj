@@ -34,5 +34,38 @@ uint32_t encodeR(uint8_t rd, uint8_t rs1, uint8_t rs2, uint8_t funct3,
            (static_cast<uint32_t>(rs2) << 20) |
            (static_cast<uint32_t>(rs1) << 15) |
            (static_cast<uint32_t>(funct3) << 12) |
-           (static_cast<uint32_t>(rd) << 7) | rv32i::OPCODE_OP;
+            (static_cast<uint32_t>(rd) << 7) | rv32i::OPCODE_OP;
+}
+
+uint32_t encodeB(uint8_t rs1, uint8_t rs2, uint8_t funct3, int32_t imm) {
+    // imm is a signed byte offset; bit0 is always zero (halfword alignment)
+    uint32_t imm12 = (static_cast<uint32_t>(imm) >> 12) & 0x1;
+    uint32_t imm10_5 = (static_cast<uint32_t>(imm) >> 5) & 0x3F;
+    uint32_t imm4_1 = (static_cast<uint32_t>(imm) >> 1) & 0xF;
+    uint32_t imm11 = (static_cast<uint32_t>(imm) >> 11) & 0x1;
+
+    return (imm12 << 31) | (imm11 << 7) | (imm10_5 << 25) | (imm4_1 << 8) |
+           (static_cast<uint32_t>(rs2) << 20) |
+           (static_cast<uint32_t>(rs1) << 15) |
+           (static_cast<uint32_t>(funct3) << 12) |
+           rv32i::OPCODE_BRANCH;
+}
+
+uint32_t encodeJAL(uint8_t rd, int32_t imm) {
+    // imm is a signed byte offset, bit0 is zero
+    uint32_t imm20 = (static_cast<uint32_t>(imm) >> 20) & 0x1;
+    uint32_t imm10_1 = (static_cast<uint32_t>(imm) >> 1) & 0x3FF;
+    uint32_t imm11 = (static_cast<uint32_t>(imm) >> 11) & 0x1;
+    uint32_t imm19_12 = (static_cast<uint32_t>(imm) >> 12) & 0xFF;
+
+    return (imm20 << 31) | (imm19_12 << 12) | (imm11 << 20) |
+           (imm10_1 << 21) | (static_cast<uint32_t>(rd) << 7) |
+           rv32i::OPCODE_JAL;
+}
+
+uint32_t encodeLUI(uint8_t rd, int32_t imm) {
+    // imm already aligned to upper 20 bits
+    return (static_cast<uint32_t>(imm) & 0xFFFFF000) |
+           (static_cast<uint32_t>(rd) << 7) |
+           rv32i::OPCODE_LUI;
 }

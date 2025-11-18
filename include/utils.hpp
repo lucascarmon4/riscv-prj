@@ -7,3 +7,6 @@ uint32_t encodeLW(uint8_t rd, uint8_t rs1, int32_t imm);
 uint32_t encodeSW(uint8_t rs2, uint8_t rs1, int32_t imm);
 uint32_t encodeR(uint8_t rd, uint8_t rs1, uint8_t rs2, uint8_t funct3,
                  uint8_t funct7);
+uint32_t encodeB(uint8_t rs1, uint8_t rs2, uint8_t funct3, int32_t imm);
+uint32_t encodeJAL(uint8_t rd, int32_t imm);
+uint32_t encodeLUI(uint8_t rd, int32_t imm);
