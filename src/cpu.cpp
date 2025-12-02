@@ -10,8 +10,12 @@ CPU::CPU(Bus& b)
 void CPU::reset() {
     x.fill(0);
     pc = 0;
+    instr_count = 0;
+    in_interrupt = false;
+    saved_pc = 0;
     std::cout << "CPU resetada. \n";
 }
+
 
 void CPU::dump() const {
     std::cout << "[CPU] Estado atual:\n";
@@ -461,10 +465,45 @@ void CPU::step(){
             }
             break;
         }
-        default:
-            std::cout << "[CPU] Instrucao desconhecida. NOP.\n";
+        default: {
+            // Instrucao especial para retorno de interrupcao (MRET: 0x30200073)
+            if (inst == 0x30200073) {
+                if (in_interrupt) {
+                    std::cout << "[CPU] MRET: retornando da interrupcao para PC="
+                              << saved_pc << "\n";
+                    next_pc = saved_pc;
+                    in_interrupt = false;
+                } else {
+                    std::cout << "[CPU] MRET executado sem interrupcao ativa (ignorado)\n";
+                }
+            } else {
+                std::cout << "[CPU] Instrucao desconhecida. NOP.\n";
+            }
             break;
+        }
     }
     pc = next_pc;
     x[0] = 0;
+
+    // Atualiza contador de instrucoes
+    instr_count++;
+
+    // --- checagem de interrupcao via barramento ---
+    if (!in_interrupt && bus.has_pending_interrupt()) {
+        std::cout << "[CPU] Interrupcao detectada. Salvando PC=" << pc
+                  << " e desviando para vetor 0x"
+                  << std::hex << IRQ_VECTOR << std::dec << "\n";
+
+        saved_pc    = pc;
+        pc          = IRQ_VECTOR;
+        in_interrupt = true;
+        bus.clear_interrupt();
+    }
+
+    if (instr_count % VRAM_DUMP_INTERVAL == 0) {
+        std::cout << "\n[CPU] Dump de VRAM apos " << instr_count
+                  << " instrucoes executadas:\n";
+        bus.dump_vram_ascii();
+        std::cout << "\n";
+    }
 }
