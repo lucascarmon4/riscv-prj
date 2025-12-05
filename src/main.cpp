@@ -41,7 +41,8 @@ int main() {
 
     uint32_t addr = 0x00000000;
 
-    uint32_t inst0 = encodeADDI(10, 0, 64);          // x10 = 64 (base RAM)
+    constexpr int DATA_BASE = 0x100;                 // 256, fora da área de código
+    uint32_t inst0 = encodeADDI(10, 0, DATA_BASE);   // x10 = 256 (base RAM)          // x10 = 64 (base RAM)
     uint32_t inst1 = encodeADDI(1,  0, 0);           // x1 = 0
     uint32_t inst2 = encodeADDI(2,  0, 5);           // x2 = 5
     uint32_t inst3 = encodeADDI(3,  0, 1);           // x3 = 1
@@ -100,20 +101,15 @@ int main() {
     //   x30 = 0x9FC00        // base IO
     //   x5  = 1
     //   IO[0] = 1            // seta flag de interrupcao no FakeIO
-    //
-    // Essa escrita pode ser feita pelo proprio programa
-    // OU externamente pela tecla 'k' (via host).
     // ------------------------------------------------------------------
 
-    const uint32_t IO_BASE_IMM20 = 0x0009F; // 0x9FC00 >> 12 = 0x9F, resto 0xC00
+    const uint32_t IO_BASE_IMM20 = 0x000A0; // 0xA0000 >> 12
 
-    uint32_t inst16 = encodeLUI_local(30, IO_BASE_IMM20);   // x30 = 0x9F000
-    uint32_t inst17 = encodeADDI(30, 30, 0xC00);            // x30 = 0x9FC00
+    uint32_t inst16 = encodeLUI_local(30, IO_BASE_IMM20);   // x30 = 0x000A0000
+    uint32_t inst17 = encodeADDI(30, 30, -0x400);           // x30 = 0x000A0000 - 0x400 = 0x0009FC00
     uint32_t inst18 = encodeADDI(5,  0, 1);                 // x5 = 1
     uint32_t inst19 = encodeSW(5, 30, 0);                   // IO[0] = 1 (IRQ)
-
-    // Loop infinito no programa principal depois de disparar interrupcao
-    uint32_t inst20 = encodeB(0, 0, rv32i::FUNCT3_BEQ, 0);  // BEQ x0,x0,0
+    uint32_t inst20 = encodeB(0, 0, rv32i::FUNCT3_BEQ, 0);  // loop infinito
 
     ram.write32(addr + 0x40, inst16);
     ram.write32(addr + 0x44, inst17);

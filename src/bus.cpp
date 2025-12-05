@@ -111,35 +111,23 @@ void Bus::write32(uint32_t address, uint32_t value) {
 
 // Novo: dump ASCII da VRAM inteira
 void Bus::dump_vram_ascii(std::size_t cols) const {
-    std::cout << "[BUS] Dump ASCII da VRAM\n";
+    std::cout << "[BUS] Dump ASCII da VRAM (primeiros 256 bytes)\n";
 
-    // Tamanho da VRAM = VRAM_END - VRAM_START + 1 = 0x10000
-    constexpr uint32_t VRAM_SIZE = VRAM_END - VRAM_START + 1;
+    const uint32_t COUNT = 256;
 
-    for (uint32_t i = 0; i < VRAM_SIZE; ++i) {
+    for (uint32_t i = 0; i < COUNT; ++i) {
         uint8_t byte = vram.read8(i);
 
-        char c;
-        if (byte == 0) {
-            c = ' '; // trata 0 como espaço em branco
-        } else if (byte >= 32 && byte <= 126) {
-            c = static_cast<char>(byte); // ASCII imprimivel
-        } else {
-            c = '.'; // qualquer coisa não-imprimível vira ponto
-        }
+        char c = ' ';
+        if (byte >= 32 && byte <= 126) c = static_cast<char>(byte);
+        else if (byte != 0) c = '.';
 
         std::cout << c;
 
-        if ((i + 1) % cols == 0) {
-            std::cout << '\n';
-        }
+        if ((i + 1) % cols == 0) std::cout << '\n';
     }
 
-    if (VRAM_SIZE % cols != 0) {
-        std::cout << '\n';
-    }
-
-    std::cout << "[BUS] Fim do dump da VRAM\n";
+    std::cout << "\n[BUS] Fim do dump da VRAM\n";
 }
 
 bool Bus::has_pending_interrupt() const {
