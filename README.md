@@ -3,6 +3,7 @@
 **Disciplina:** Organização de Computadores  
 **Professor:** Walter S. Oliveira  
 **Projeto:** Desenvolvimento de um Simulador RISC-V
+**Link Vídeo:** https://youtu.be/ka-XsrGhIR8?si=DnuShVLv0I6W9pt0
 
 ---
 
